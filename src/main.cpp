@@ -30,9 +30,9 @@ void rightEncoderInc(){
   }
 }
 
-Motor leftMotor(LEFT_MOTOR_FORWARD_PIN, LEFT_MOTOR_BACK_PIN, LEFT_MOTOR_PWM_PIN, 0,  &leftEncoderCount);
-Motor rightMotor(RIGHT_MOTOR_FORWARD_PIN, RIGHT_MOTOR_BACK_PIN, RIGHT_MOTOR_PWM_PIN, 1, &rightEncoderCount);
-SwerveDrive wheels(&leftMotor, &rightMotor, 1); //151/1.86
+Motor steerMotor(LEFT_MOTOR_FORWARD_PIN, LEFT_MOTOR_BACK_PIN, LEFT_MOTOR_PWM_PIN, 0,  &leftEncoderCount);
+Motor driveMotor(RIGHT_MOTOR_FORWARD_PIN, RIGHT_MOTOR_BACK_PIN, RIGHT_MOTOR_PWM_PIN, 1, &rightEncoderCount);
+SwerveDrive wheels(&steerMotor, &driveMotor, 1); //151/1.86
 IMU imu;
 
 // Object to handle serial communication
@@ -48,7 +48,7 @@ void setup() {
 
   Serial.println("Starting up...");
   bleSerial.println("Starting up...");
-
+  //TODO: set the units per step for the motors when we get encoders.
   wheels.begin();
   wheels.setPID(0.2, 12, 40);
   // wheels.setPID(0, 0, 0);
@@ -68,99 +68,62 @@ void setup() {
 // takes the serial args and executes the command
 void doSerialCommand(int * args, int args_length) {
   switch (args[0]) {
-    // case MOTOR_READ:{
-    //   Serial.print("!MTR,");
-    //   bleSerial.print("!MTR,");
-    //   // print the current pose
-    //   xyzData pose = (wheels.getCurrentPose());
-    //   for(auto i = 0; i < 3; i++) {
-    //     Serial.print(pose.get(i),4);
-    //     bleSerial.print(pose.get(i),4);
-    //     Serial.print(",");
-    //     bleSerial.print(",");
-    //   }
-    //   // print the target pose
-    //   pose = (wheels.getTargetPose());
-    //   for(auto i = 0; i < 3; i++) {
-    //     Serial.print(pose.get(i),4);
-    //     bleSerial.print(pose.get(i),4);
-    //     Serial.print(",");
-    //     bleSerial.print(",");
-    //   }
-
-    //   Serial.println(";");
-    //   bleSerial.println(";");
-    //   break;
-    // }
-    // case MOTOR_WRITE:{
-    //   if(args_length < 4) break;
-    //   Serial.print("!MTR_WRT,");
-    //   bleSerial.print("!MTR_WRT,");
-    //   for(int i = 1; i < args_length; i++) {
-    //     Serial.print(args[i]);
-    //     bleSerial.print(args[i]);
-    //     Serial.print(",");
-    //     bleSerial.print(",");
-    //   }
-    //   Serial.println(";");
-    //   bleSerial.println(";");
-    //   // set the new target pose
-    //   wheels.setTargetPose(args[1], args[2], float(args[3])*PI/180);
-    //   //wheels.print();
-    //   break;
-    // }
-    // case 2:{
-    //   if(args_length < 4) break;
-    //   Serial.print("!CONSTWRT,");
-    //   bleSerial.print("!CONSTWRT,");
-    //   for(int i = 1; i < args_length; i++) {
-    //     Serial.print(float(args[i])/1000.0);
-    //     bleSerial.print(float(args[i])/1000.0);
-    //     Serial.print(",");
-    //     bleSerial.print(",");
-    //   }
-    //   Serial.println(";");
-    //   bleSerial.println(";");
-    //   wheels.setPID(float(args[1])/1000.0, float(args[2])/1000.0, float(args[3])/1000.0);
-    //   break;
-    // }
-    // case 3:{
-    //   if(args_length < 4) break;
-    //   Serial.print("!INCWRT,");
-    //   bleSerial.print("!INCWRT,");
-    //   for(int i = 1; i < args_length; i++) {
-    //     Serial.print(float(args[i]));
-    //     bleSerial.print(float(args[i]));
-    //     Serial.print(",");
-    //     bleSerial.print(",");
-    //   }
-    //   Serial.println(";");
-    //   xyzData currentPose = wheels.getCurrentPose();
-    //   wheels.setTargetPose(currentPose.x + args[1], currentPose.y + args[2], currentPose.z + float(args[3])*PI/180);
-
-    // }
-    // case SONAR_READ:{ 
-    //   Serial.print("!SNR,");
-    //   Serial.print(sonar.getAngleIncrement());
-    //   sonar.print();
-    //   Serial.println(";");
-    //   break;
-    // }
-    // case SONAR_WRITE:{
-    //   if(args_length < 2) break;
-    //   sonar.enableScanMode(args[1]==1);
-    //   sonar.setAngleIncrement(args[2]);
-    //   Serial.print("SNR,");
-    //   Serial.print(args[1]==1);
-    //   Serial.print(",");
-    //   Serial.print(args[2]);
-    //   Serial.println(";");
-    //   break;
-    // }
-    case IR_READ:{
-      Serial.println("IR_READ");
+    case ERR:{
+      Serial.println("!ERR;");
+      bleSerial.println("!ERR;");
       break;
     }
+    case MOTOR_READ:{
+      Serial.print("!MTR,");
+      bleSerial.print("!MTR,");
+      // print the current pose
+      xyzData pose = wheels.getVelocity();
+      for(auto i = 0; i < 3; i++) {
+        Serial.print(pose.get(i),4);
+        bleSerial.print(pose.get(i),4);
+        if(i < 2) {
+          Serial.print(",");
+          bleSerial.print(",");
+        }
+      }
+
+      Serial.println(";");
+      bleSerial.println(";");
+      break;
+    }
+    case MOTOR_WRITE:{
+      if(args_length < 3) break;
+      Serial.print("!MTR_WRT,");
+      bleSerial.print("!MTR_WRT,");
+      for(int i = 1; i < args_length; i++) {
+        Serial.print(args[i]);
+        bleSerial.print(args[i]);
+        Serial.print(",");
+        bleSerial.print(",");
+      }
+      Serial.println(";");
+      bleSerial.println(";");
+      // set the new target pose
+      wheels.setVelocity(args[1], args[2]);
+      break;
+    }
+    case SET_STATE_CONSTANTS:{
+      if(args_length < 4) break;
+      wheels.setPID(args[1], args[2], args[3]);
+      break;
+    }
+    // TODO: enable this when we get encoders on the wheels
+    // case SET_MOTOR_PID:{
+    //   if(args_length < 5) break;
+    //   if(args[1] == 0){
+    //     steerMotor.setPID(args[2], args[3], args[4]);
+    //   }
+    //   else if(args[1] == 1){
+    //     driveMotor.setPID(args[2], args[3], args[4]);
+    //   }
+    //   break;
+    // }
+
     default:{
       Serial.println("ERR");
       break;
@@ -188,11 +151,5 @@ void loop() {
     doSerialCommand(args, args_length);
     bleSer.clearNewData();
   }
-  // imu.update();
   wheels.update(&imu);
-  // wheels.update();
-  // if(millis() - timer > 1000){
-  //   imu.print();
-  //   timer = millis();
-  // }
 }

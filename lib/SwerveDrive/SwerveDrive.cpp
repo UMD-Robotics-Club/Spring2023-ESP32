@@ -26,5 +26,5 @@ void SwerveDrive::setPID(float kp, float ki, float kd){
 }
 
 xyzData SwerveDrive::getVelocity(){
-    return this->driveMotor->getVelocity();
+    return xyzData(this->driveMotor->getVelocity(), 0 ,0);
 }
