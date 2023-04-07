@@ -44,7 +44,7 @@ float PositionMotor::update(){
     int time_diff = int(now - lastTime);
     if(time_diff < 1 || *incriment == 0) return 0.0;
     lastTime = now;
-    float dt = float(time_diff)*0.001;
+    this->dt = float(time_diff)*0.001;
 
     // update encoder count
     lastEncoderCount = encoderCount;
@@ -53,7 +53,7 @@ float PositionMotor::update(){
     *incriment = 0;
 
     // calculate the error
-    float error = targetPosition - float(encoderCount)*unitPerPulse;
+    float error = getError();
     // calculate the integral
     integral += error*dt;
     // calculate the derivative
@@ -67,4 +67,8 @@ float PositionMotor::update(){
 
     // return the current position
     return getCurrentPosition();
+}
+
+float PositionMotor::getError(){
+    return targetPosition - getCurrentPosition();
 }

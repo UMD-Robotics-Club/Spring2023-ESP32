@@ -40,19 +40,19 @@ class PositionMotor : public Motor{
          * @brief Set the target position of the motor
          * @param targetPosition The target position of the motor in units
         */
-        void setTargetPosition(float targetPosition);
+        virtual void setTargetPosition(float targetPosition);
 
         /**
          * @brief Get the target position of the motor
          * @return float The target position of the motor in units
         */
-        float getTargetPosition();
+        virtual float getTargetPosition();
 
         /**
          * @brief Get the current position of the motor
          * @return float The current position of the motor in units
         */
-        float getCurrentPosition();
+        virtual float getCurrentPosition();
 
         /**
          * @brief Set the PID constants for the motor
@@ -66,7 +66,7 @@ class PositionMotor : public Motor{
          * @brief run any updates which need to be done continuously
          * @return float The current velocity of the motor
         */
-        float update() override;
+        float update();
     
     protected:
         uint16_t minAngle;
@@ -85,4 +85,7 @@ class PositionMotor : public Motor{
         float kd = 0;
         float lastError = 0;
         float integral = 0;
+        float dt = 0;
+
+        virtual float getError();
 };
