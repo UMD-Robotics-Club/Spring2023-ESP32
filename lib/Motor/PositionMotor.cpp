@@ -1,9 +1,9 @@
-#include "ServoMotor.h"
+#include "PositionMotor.h"
 
-ServoMotor::ServoMotor(uint8_t pwmPin, uint8_t pwmChannel, volatile int * encoderCount, uint16_t minAngle, uint16_t maxAngle) : 
+PositionMotor::PositionMotor(uint8_t pwmPin, uint8_t pwmChannel, volatile int * encoderCount, uint16_t minAngle, uint16_t maxAngle) : 
 Motor(pwmPin, pwmChannel), incriment(encoderCount), minAngle(minAngle), maxAngle(maxAngle){}
 
-ServoMotor::ServoMotor(uint8_t forwardPin, 
+PositionMotor::PositionMotor(uint8_t forwardPin, 
                         uint8_t backwardPin, 
                         uint8_t pwmPin, 
                         uint8_t pwmChannel, 
@@ -12,33 +12,33 @@ ServoMotor::ServoMotor(uint8_t forwardPin,
                         uint16_t maxAngle) :
 Motor(forwardPin, backwardPin, pwmPin, pwmChannel), incriment(encoderCount), minAngle(minAngle), maxAngle(maxAngle){}
 
-void ServoMotor::setUnitPerPulse(float unitPerPulse){
+void PositionMotor::setUnitPerPulse(float unitPerPulse){
     this->unitPerPulse = unitPerPulse;
 }
 
-float ServoMotor::getUnitPerPulse(){
+float PositionMotor::getUnitPerPulse(){
     return unitPerPulse;
 }
 
-void ServoMotor::setTargetPosition(float targetPosition){
+void PositionMotor::setTargetPosition(float targetPosition){
     this->targetPosition = targetPosition;
 }
 
-float ServoMotor::getTargetPosition(){
+float PositionMotor::getTargetPosition(){
     return targetPosition;
 }
 
-float ServoMotor::getCurrentPosition(){
+float PositionMotor::getCurrentPosition(){
     return float(encoderCount)*unitPerPulse;
 }
 
-void ServoMotor::setPID(float kp, float ki, float kd){
+void PositionMotor::setPID(float kp, float ki, float kd){
     this->kp = kp;
     this->ki = ki;
     this->kd = kd;
 }
 
-float ServoMotor::update(){
+float PositionMotor::update(){
     // calculate dt
     unsigned long now = millis();
     int time_diff = int(now - lastTime);

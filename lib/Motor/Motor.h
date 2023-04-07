@@ -1,16 +1,23 @@
 #pragma once
 #include <Arduino.h>
+#include <Servo.h>
 
 class Motor{
     public:
         /**
-         * @brief Construct a new Encoded Motor object
+         * @brief Construct a new motor object that uses a motor drive like the LM298N
          * @param forwardPin The pin to control the forward direction of the motor
          * @param backwardPin The pin to control the backward direction of the motor
          * @param pwmPin The pin to control the speed of the motor
          * @param incriment The number of steps to incriment the encoder count by. (positive or negative)
         */
         Motor(uint8_t forwardPin, uint8_t backwardPin, uint8_t pwmPin, uint8_t pwmChannel);
+
+        /**
+         * @brief Construct a new motor object that uses a servo-signal motor driver
+         * @param pwmPin The pin to control the speed of the motor
+         * @param pwmChannel the pwm channel to use. on the esp32 they are 0-15 and each one can control one motor.
+        */
         Motor(uint8_t pwmPin, uint8_t pwmChannel);
         ~Motor() = default;
 
@@ -44,6 +51,11 @@ class Motor{
         uint8_t backwardPin;
         uint8_t pwmPin;
         uint8_t pwmChannel;
+        Servo servo;
 
         float currentVelocity = 0;
+
+    private:
+        void setServoVelocity(int velocity);
+        void setPWMVelocity(int velocity);
 };

@@ -30,8 +30,8 @@ void rightEncoderInc(){
   }
 }
 
-Motor leftMotor(LEFT_MOTOR_FORWARD_PIN, LEFT_MOTOR_BACK_PIN, LEFT_MOTOR_PWM_PIN, 0,  &leftEncoderCount);
-Motor rightMotor(RIGHT_MOTOR_FORWARD_PIN, RIGHT_MOTOR_BACK_PIN, RIGHT_MOTOR_PWM_PIN, 1, &rightEncoderCount);
+Motor leftMotor(LEFT_MOTOR_PWM_PIN, 0);
+Motor rightMotor(RIGHT_MOTOR_PWM_PIN, 1);
 SwerveDrive wheels(&leftMotor, &rightMotor, 1); //151/1.86
 IMU imu;
 

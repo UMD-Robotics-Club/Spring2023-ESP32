@@ -1,7 +1,7 @@
 #pragma once
 #include "Motor.h"
 
-class ServoMotor : public Motor{
+class PositionMotor : public Motor{
     public:
         /**
          * @brief Construct a new Servo Motor object
@@ -11,7 +11,7 @@ class ServoMotor : public Motor{
          * @param minAngle The minimum angle of the servo in degrees
          * @param maxAngle The maximum angle of the servo in degrees
         */
-        ServoMotor(uint8_t pwmPin, uint8_t pwmChannel, volatile int * encoderCount, uint16_t minAngle, uint16_t maxAngle);
+        PositionMotor(uint8_t pwmPin, uint8_t pwmChannel, volatile int * encoderCount, uint16_t minAngle, uint16_t maxAngle);
 
         /**
          * @brief Construct a new Servo Motor object
@@ -23,8 +23,8 @@ class ServoMotor : public Motor{
          * @param minAngle The minimum angle of the servo in degrees
          * @param maxAngle The maximum angle of the servo in degrees
         */
-        ServoMotor(uint8_t forwardPin, uint8_t backwardPin, uint8_t pwmPin, uint8_t pwmChannel, volatile int * encoderCount, uint16_t minAngle, uint16_t maxAngle);
-        ~ServoMotor() = default;
+        PositionMotor(uint8_t forwardPin, uint8_t backwardPin, uint8_t pwmPin, uint8_t pwmChannel, volatile int * encoderCount, uint16_t minAngle, uint16_t maxAngle);
+        ~PositionMotor() = default;
 
         /**
          * @brief Set the units per encoder pulse for this motor. IE: mm per pulse or degrees per pulse
