@@ -1,21 +1,10 @@
 #include "IMU.h"
 
 void IMU::begin(){
-    Wire.begin();
-    //Initialize the IMU
-    uint8_t count = 0;
-    while (!imu.begin(ACC_ADDRESS, MAG_ADDRESS, Wire)){
-        Serial.println("Failed to connect to LSM9DS1. Attempt (" + String(count) + "/5)");
-        count++;
-        if(count > 5){
-            return;
-        }
-    }
-    this->isInitialized = true;
+    JY901.StartIIC();
     calibrate();
-    Serial.println("LSM9DS1 online!");
-    lastUpdate = millis();
-    return;
+    Serial.println("IMU online!");
+    isInitialized = true;
 }
 
 void IMU::calibrate(){
@@ -30,27 +19,14 @@ void IMU::calibrate(){
     // add up 1000 gyro readings
     int i = 0;
     while(i < 1000){
-        if ( imu.gyroAvailable() ){
-            i++;
-            imu.readGyro();
-            gyroOffset.x += imu.calcGyro(imu.gx);
-            gyroOffset.y += imu.calcGyro(imu.gy);
-            gyroOffset.z += imu.calcGyro(imu.gz);
-            
-        }
+        gyroOffset = gyroOffset + getGyro();
     }
     // divide the sum by 1000 to get the average
     gyroOffset = gyroOffset / 1000.0;
 
     i = 0;
     while(i < 1000){
-        if(imu.accelAvailable()){
-            i++;
-            imu.readAccel();
-            accelOffset.x += imu.calcAccel(imu.ax);
-            accelOffset.y += imu.calcAccel(imu.ay);
-            accelOffset.z += imu.calcAccel(imu.az);
-        }
+        accelOffset = accelOffset + getAccel();
     }
     accelOffset = accelOffset / 1000.0;
 
@@ -66,75 +42,22 @@ void IMU::calibrate(){
     Serial.println("Calibration complete");
 }
 
-void IMU::update(){
-    if(!isInitialized){
-        Serial.println("IMU not initialized. Cannot update.");
-        return;
-    }
-    if(millis() - lastUpdate < 1){
-        return;
-    }
-
-    if(imu.accelAvailable()){
-        imu.readAccel();
-        this->accel = xyzData(imu.calcAccel(imu.ax), imu.calcAccel(imu.ay), imu.calcAccel(imu.az)) - accelOffset;
-        if(isCalibrated) this->accel = this->accel - this->accelOffset;
-    }
-
-    if(imu.gyroAvailable()){
-        imu.readGyro();
-        update_angle();
-    }
-
-    if(imu.magAvailable()){
-        imu.readMag();
-        this->mag = xyzData(imu.calcMag(imu.mx), imu.calcMag(imu.my), imu.calcMag(imu.mz));
-        if(isCalibrated) this->mag = this->mag - this->magOffset;
-    }
-}
-
-void IMU::update_angle(){
-    // calculate the change in time since the last time this function was called
-    double dt = double(millis() - lastGyroUpdate) / 1000;
-    lastGyroUpdate = millis();
-    this->lastOrientation = this->orientation;
-
-
-    if(isGyroFrozen){
-        // xyzData temp = xyzData(imu.calcGyro(imu.gx), imu.calcGyro(imu.gy), imu.calcGyro(imu.gz));
-        // this->gyroOffset = this->gyroOffset*0.999 + temp*0.001;
-        return;
-    }
-    // calculate the gyro values and make sure to subtract the offset
-    this->gyro.x = (double(imu.calcGyro(imu.gx)) - gyroOffset.x)*dt;
-    this->gyro.y = (double(imu.calcGyro(imu.gy)) - gyroOffset.y)*dt;
-    this->gyro.z = (double(imu.calcGyro(imu.gz)) - gyroOffset.z)*dt;
-
-    // Update the orientation
-    this->orientation = this->orientation + this->gyro * deg_to_rad;
-
-    // wrap the angles between -pi and pi
-    orientation.x = wrap_angle(orientation.x);
-    orientation.y = wrap_angle(orientation.y);
-    orientation.z = wrap_angle(orientation.z);
-}
-
 void IMU::print(){
     if(!isInitialized){
         Serial.println("IMU not initialized. Cannot print.");
         return;
     }
     Serial.print("!ACC,");
-    accel.print();
+    getAccel().print();
     Serial.println(";");
     Serial.print("!GYR,");
-    gyro.print();
+    getGyro().print();
     Serial.println(";");
     Serial.print("!MAG,");
-    mag.print();
+    getMag().print();
     Serial.println(";");
-    Serial.print("!ORI,");
-    orientation.print();
+    Serial.print("!ANG,");
+    getAngle().print();
     Serial.println(";");
 }
 
@@ -153,22 +76,28 @@ float IMU::wrap_angle(float angle) {
     return angle;
 }
 
-xyzData IMU::getOrientation(){
-    return orientation;
-}
-
-xyzData IMU::getOrientationChange(){
-    return orientation - lastOrientation;
-}
-
 xyzData IMU::getAccel(){
+    JY901.GetAcc();
+    xyzData accel = xyzData((float)JY901.stcAcc.a[0]/32768*16, (float)JY901.stcAcc.a[1]/32768*16, (float)JY901.stcAcc.a[2]/32768*16);
+    if(isCalibrated) return accel - accelOffset;
     return accel;
 }
 
 xyzData IMU::getGyro(){
+    JY901.GetGyro();
+    xyzData gyro = xyzData((float)JY901.stcGyro.w[0]/32768*2000, (float)JY901.stcGyro.w[1]/32768*2000, (float)JY901.stcGyro.w[2]/32768*2000);
+    if(isCalibrated) return gyro - gyroOffset;
     return gyro;
 }
 
 xyzData IMU::getMag(){
+    JY901.GetMag();
+    xyzData mag = xyzData(JY901.stcMag.h[0], JY901.stcMag.h[1], JY901.stcMag.h[2]);
+    if(isCalibrated) return mag - magOffset;
     return mag;
+}
+
+xyzData IMU::getAngle(){
+    JY901.GetAngle();
+    return xyzData((float)JY901.stcAngle.Angle[0]/32768*180, (float)JY901.stcAngle.Angle[1]/32768*180, (float)JY901.stcAngle.Angle[2]/32768*180);
 }
