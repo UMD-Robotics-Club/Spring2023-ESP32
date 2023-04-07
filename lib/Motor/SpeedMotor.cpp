@@ -6,5 +6,9 @@ SpeedMotor::SpeedMotor(uint8_t forwardPin, uint8_t backwardPin, uint8_t pwmPin, 
 
 // TODO: Test if this ever gets called
 float SpeedMotor::getError(){
-    return targetPosition - float(encoderCount - lastEncoderCount)*unitPerPulse/dt;
+    return targetPosition - getVelocity();
+}
+
+float SpeedMotor::getVelocity(){
+    return float(encoderCount - lastEncoderCount)*unitPerPulse/dt;
 }

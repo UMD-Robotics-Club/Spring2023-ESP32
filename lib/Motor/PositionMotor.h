@@ -40,19 +40,25 @@ class PositionMotor : public Motor{
          * @brief Set the target position of the motor
          * @param targetPosition The target position of the motor in units
         */
-        virtual void setTargetPosition(float targetPosition);
+        void setTargetPosition(float targetPosition);
+
+        // These are here as a compatibility layer for the parent motor class
+        void setTargetVelocity(float targetVelocity) override {setTargetPosition(targetVelocity);};
+        float getTargetVelocity() override {return getTargetPosition();};
+        float getVelocity() override {return getCurrentPosition();};
+
 
         /**
          * @brief Get the target position of the motor
          * @return float The target position of the motor in units
         */
-        virtual float getTargetPosition();
+        float getTargetPosition();
 
         /**
          * @brief Get the current position of the motor
          * @return float The current position of the motor in units
         */
-        virtual float getCurrentPosition();
+        float getCurrentPosition();
 
         /**
          * @brief Set the PID constants for the motor

@@ -22,10 +22,20 @@ class Motor{
         ~Motor() = default;
 
         /**
-         * @brief Get the current linear velocity of the motor in mm/s
-         * @return int The velocity of the motor
+         * @brief Get the current linear velocity of the motor
+         * @return float The velocity of the motor
          */
         virtual float getVelocity();
+
+        /**
+         * @brief This is here as a forward compatibility function for children classes to override
+         */
+        virtual float getTargetVelocity(){return currentVelocity;};
+
+        /**
+         * @brief this is here as a forward compatibility function for children classes to override
+         */
+        virtual void setTargetVelocity(float targetVelocity){setVelocity(targetVelocity);};
 
         /**
          * @brief run any updates which need to be done continuously
