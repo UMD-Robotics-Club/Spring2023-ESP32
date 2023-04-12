@@ -17,6 +17,8 @@ void SwerveDrive::update(IMU * imu){
 void SwerveDrive::setVelocity(float velocity, float angle){
     this->targetVelocity = velocity;
     this->targetAngle = angle;
+    this->steerMotor->setVelocity(angle);
+    this->driveMotor->setVelocity(velocity);
 }
 
 void SwerveDrive::setPID(float kp, float ki, float kd){

@@ -10,8 +10,7 @@ float Motor::getVelocity(){
 }
 
 void Motor::begin(){  
-    
-    if(forwardPin != -1 && backwardPin != -1){
+    if(forwardPin != 255 && backwardPin != 255){
         pinMode(forwardPin, OUTPUT);
         pinMode(backwardPin, OUTPUT);
         digitalWrite(forwardPin, LOW);
@@ -28,7 +27,9 @@ void Motor::begin(){
         Serial.println(backwardPin);
     }
     else{
-        servo.attach(pwmPin, pwmChannel);
+        Serial.print("Motor::begin() Servo mode on pin:");
+        Serial.println(pwmPin);
+        servo.attach(pwmPin, pwmChannel, 0, 180, 670, 2330);
     }
 }
 
@@ -37,7 +38,8 @@ float Motor::update(){
 }
 
 void Motor::setVelocity(int velocity){
-    if(forwardPin != -1 && backwardPin != -1){
+    if(forwardPin != 255 && backwardPin != 255){
+        Serial.println("Wrong function ran!");
         setPWMVelocity(velocity);
     } else {
         setServoVelocity(velocity);
@@ -53,7 +55,8 @@ void Motor::setServoVelocity(int velocity){
     }
 
     currentVelocity = (float)velocity;
-
+    Serial.print("Velocity: ");
+    Serial.println(velocity);
     servo.write(map(velocity, -255, 255, 0, 180));
 }
 
