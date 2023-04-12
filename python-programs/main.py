@@ -1,3 +1,7 @@
+'''
+This file was made with help from Riley Bruning and Quinn Henthorne
+'''
+
 import pygame
 from SerialInterface.SerialInterface import SerialInterface
 from math import pi as PI
