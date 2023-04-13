@@ -11,6 +11,7 @@ import time
 
 
 class SerialInterface:
+    
     def __init__(self, port, baud_rate) -> None:
         '''
         Initializes the IMU class.
@@ -18,6 +19,8 @@ class SerialInterface:
         - ser: An initalized serial object which can communicate with the IMU
         '''
         self.serial = serial.Serial(port, baud_rate)
+        self.printSerial = False
+        
         return
     
 
@@ -64,6 +67,8 @@ class SerialInterface:
             message = self.serial.readline().decode('UTF-8').strip()
         # parse the serial into a header and list
         header, data = self.process_message(message)
+        if self.printSerial:
+            print(message)
         
         if(header != "MTR"):
             return []
@@ -80,6 +85,9 @@ class SerialInterface:
             self.serial.write(message.encode('UTF-8'))
             return_msg = self.serial.readline().decode('UTF-8').strip()
         
+        if self.printSerial:
+            print(message)
+        
     
     def setGains(self, k_rho, k_alpha, k_beta):
         message = "!3,"+str(k_rho*1000)+","+str(k_alpha*1000)+","+str(k_beta*1000)+";\n"
@@ -89,6 +97,9 @@ class SerialInterface:
         while return_msg.find("CONSTWRT") != -1 and time.time()-timer < 1:
             self.serial.write(message.encode('UTF-8'))
             return_msg = self.serial.readline().decode('UTF-8').strip()
+        
+        if self.printSerial:
+            print(message)
     
 
 

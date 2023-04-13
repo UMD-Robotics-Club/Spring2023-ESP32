@@ -8,7 +8,7 @@ from math import pi as PI
 from math import sin
 
 serial = SerialInterface('ttyACM0', 115200) #TODO: Change this to the correct COM port
-
+serial.printSerial = True # enable debug printing
 pygame.init()
 
 
@@ -86,9 +86,10 @@ if __name__ == "__main__":
             control_axes[0] = 0
         if abs(control_axes[1]) < deadzone_angle:
             control_axes[1] = 0
+        
+        serial.setTargetPose(control_axes[0]*255, control_axes[1]*255)
             
         if control_axes[0] != 0 or control_axes[1] != 0:
-            serial.setTargetPose(control_axes[0]*255, control_axes[1]*255)
             print(control_axes[0], control_axes[1])
                         
         # Limit to 30 frames per second.
