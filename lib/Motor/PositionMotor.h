@@ -40,11 +40,11 @@ class PositionMotor : public Motor{
          * @brief Set the target position of the motor
          * @param targetPosition The target position of the motor in units
         */
-        void setTargetPosition(float targetPosition);
+        void setTarget(float targetPosition);
 
         // These are here as a compatibility layer for the parent motor class
-        void setTargetVelocity(float targetVelocity) override {setTargetPosition(targetVelocity);};
-        float getTargetVelocity() override {return getTargetPosition();};
+        void setTargetVelocity(float targetVelocity) override {setTarget(targetVelocity);};
+        
         float getVelocity() override {return getCurrentPosition();};
 
 
@@ -52,7 +52,7 @@ class PositionMotor : public Motor{
          * @brief Get the target position of the motor
          * @return float The target position of the motor in units
         */
-        float getTargetPosition();
+        float getTarget();
 
         /**
          * @brief Get the current position of the motor

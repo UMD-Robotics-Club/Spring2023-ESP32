@@ -1,11 +1,13 @@
 #pragma once
 
 #include "Drive.h"
+#include "PositionMotor.h"
+#include "SpeedMotor.h"
 #include "IMU.h"
 
 class SwerveDrive : public Drive{
     public:
-        SwerveDrive(Motor* steerMotor, Motor* driveMotor, float wheelBase);
+        SwerveDrive(SpeedMotor* driveMotor, PositionMotor* steerMotor, float wheelBase);
 
         /**
          * @brief Update the swerve drive
@@ -32,6 +34,8 @@ class SwerveDrive : public Drive{
         void setPID(float kp, float ki, float kd);
 
     private:
+        SpeedMotor* driveMotor;
+        PositionMotor* steerMotor;
         float kp = 1;
         float ki = 0;
         float kd = 0;

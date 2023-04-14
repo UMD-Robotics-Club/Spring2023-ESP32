@@ -20,11 +20,11 @@ float PositionMotor::getUnitPerPulse(){
     return unitPerPulse;
 }
 
-void PositionMotor::setTargetPosition(float targetPosition){
+void PositionMotor::setTarget(float targetPosition){
     this->targetPosition = targetPosition;
 }
 
-float PositionMotor::getTargetPosition(){
+float PositionMotor::getTarget(){
     return targetPosition;
 }
 
