@@ -30,49 +30,62 @@ void rightEncoderInc(){
   }
 }
 
+// the motor object that handles controlling the steering. This object can be subbed for A Position or Speed motor object
 Motor steerMotor(STEER_MOTOR_PWM_PIN, 0);
+// the motor object that handles controlling the drive. This object can be subbed for A Position or Speed motor object
 Motor driveMotor(DRIVE_MOTOR_PWM_PIN, 1);
+// this class takes in two motor objects and the distance between the two wheels to synchronize the motor's control systems.
+// It's reocmmended that you use this class instead of the motor objects directly.
 SwerveDrive wheels(&steerMotor, &driveMotor, 1); //151/1.86
+
+// Object to handle IMU communication
 IMU imu;
 
-// Object to handle serial communication
+// Object to handle serial communication and decode the commands
 SerialMessage ser;
+// This is the raw bluetooth serial object
 BluetoothSerial bleSerial;
+// this is a wrapper around the bluetooth serial object that does the same thing as SerialMessage, but over bluetooth
 BluetoothSerialMessage bleSer(&bleSerial);
 
 void setup() {
   Serial.begin(115200);
   bleSer.init();
-  delay(1000);
   imu.begin();
 
   Serial.println("Starting up...");
   bleSerial.println("Starting up...");
-  //TODO: set the units per step for the motors when we get encoders.
-  wheels.begin();
-  wheels.setPID(0.2, 12, 40);
-  // wheels.setPID(0, 0, 0);
-  // // attach the interrupts
+
+  //TODO: set these things when we switch over to an encoded motor
+  // steerMotor.setUnitsPerStep(1);
+  // steerMotor.setPID(1, 0, 0);
+  // driveMotor.setUnitsPerStep(1);
+  // driveMotor.setPID(1, 0, 0);
+
+  wheels.begin(); // initialize the motors and the drive system
+  wheels.setPID(0.2, 12, 40); // TODO: this currently doesn't do anything behind the scenes. Probably fix that.
+
+  // attach the interrupts
   attachInterrupt(digitalPinToInterrupt(LEFT_ENC_A_PIN), leftEncoderInc, CHANGE);
   attachInterrupt(digitalPinToInterrupt(RIGHT_ENC_A_PIN), rightEncoderInc, CHANGE);
   
-  // servo.attach(servo_pin);
-  // servo.write(90);
-  // sonar.attachServo(servo);
-  
-  // sonar.enableScanMode(false);
   Serial.println("Started");
   bleSerial.println("Started");
 }
 
-// takes the serial args and executes the command
+/**
+  *@brief Take the serial arguments and do the appropriate action
+  *@param args The array of arguments from the serial message
+  *@param args_length The length of the array of arguments
+*/
 void doSerialCommand(int * args, int args_length) {
   switch (args[0]) {
-    case ERR:{
+    case ERR:{ // Note, the constants like ERR, MOTOR_READ, etc are defined in SerialMessage.h
       Serial.println("!ERR;");
       bleSerial.println("!ERR;");
       break;
     }
+    // sends the current pose of the robot over serial
     case MOTOR_READ:{
       Serial.print("!MTR,");
       bleSerial.print("!MTR,");
@@ -91,6 +104,7 @@ void doSerialCommand(int * args, int args_length) {
       bleSerial.println(";");
       break;
     }
+    // sets the target pose of the robot
     case MOTOR_WRITE:{
       if(args_length < 3) break;
       Serial.print("!MTR_WRT,");
@@ -107,6 +121,7 @@ void doSerialCommand(int * args, int args_length) {
       wheels.setVelocity(args[1], args[2]);
       break;
     }
+    // sets the PID constants for the drive system
     case SET_STATE_CONSTANTS:{
       if(args_length < 4) break;
       wheels.setPID(args[1], args[2], args[3]);
@@ -134,8 +149,10 @@ void doSerialCommand(int * args, int args_length) {
 unsigned long timer = 0;
 
 void loop() {
+  // update the serial if there's anything available
   ser.update();
   bleSer.update();
+  // process the new serial data if there is any
   if (ser.isNewData()) {
     int * args = ser.getArgs();
     int args_length = ser.getPopulatedArgs();
@@ -143,7 +160,7 @@ void loop() {
     doSerialCommand(args, args_length);
     ser.clearNewData();
   }
-
+  // process the new bluetooth serial data if there is any
   if(bleSer.isNewData()) {
     int * args = bleSer.getArgs();
     int args_length = bleSer.getPopulatedArgs();
@@ -151,5 +168,7 @@ void loop() {
     doSerialCommand(args, args_length);
     bleSer.clearNewData();
   }
+
+  // update the wheels with the new pose
   wheels.update(&imu);
 }
