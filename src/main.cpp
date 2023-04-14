@@ -30,13 +30,15 @@ void rightEncoderInc(){
   }
 }
 
+// TODO: Switch these to Position/Velocity motors once they have encoders
 // the motor object that handles controlling the steering. This object can be subbed for A Position or Speed motor object
 Motor steerMotor(STEER_MOTOR_PWM_PIN, 0);
 // the motor object that handles controlling the drive. This object can be subbed for A Position or Speed motor object
 Motor driveMotor(DRIVE_MOTOR_PWM_PIN, 1);
 // this class takes in two motor objects and the distance between the two wheels to synchronize the motor's control systems.
 // It's reocmmended that you use this class instead of the motor objects directly.
-SwerveDrive wheels(&steerMotor, &driveMotor, 1); //151/1.86
+// TODO: switch this to swerve drive when we have encoded motors
+Drive wheels(&driveMotor, &steerMotor); //151/1.86
 
 // Object to handle IMU communication
 IMU imu;
@@ -63,7 +65,8 @@ void setup() {
   // driveMotor.setPID(1, 0, 0);
 
   wheels.begin(); // initialize the motors and the drive system
-  wheels.setPID(0.2, 12, 40); // TODO: this currently doesn't do anything behind the scenes. Probably fix that.
+  // TODO: enable this when we switch over to an encoded motor
+  // wheels.setPID(0.2, 12, 40); // TODO: this currently doesn't do anything behind the scenes. Probably fix that.
 
   // attach the interrupts
   attachInterrupt(digitalPinToInterrupt(LEFT_ENC_A_PIN), leftEncoderInc, CHANGE);
@@ -90,7 +93,7 @@ void doSerialCommand(int * args, int args_length) {
       Serial.print("!MTR,");
       bleSerial.print("!MTR,");
       // print the current pose
-      xyzData pose = wheels.getVelocity();
+      xyzData pose = wheels.getDriveTarget();
       for(auto i = 0; i < 3; i++) {
         Serial.print(pose.get(i),4);
         bleSerial.print(pose.get(i),4);
@@ -118,15 +121,16 @@ void doSerialCommand(int * args, int args_length) {
       Serial.println(";");
       bleSerial.println(";");
       // set the new target pose
-      wheels.setVelocity(args[1], args[2]);
+      wheels.setDriveTarget(args[1], args[2]);
       break;
     }
+    // TODO: enable this when we get encoders on the wheels
     // sets the PID constants for the drive system
-    case SET_STATE_CONSTANTS:{
-      if(args_length < 4) break;
-      wheels.setPID(args[1], args[2], args[3]);
-      break;
-    }
+    // case SET_STATE_CONSTANTS:{
+    //   if(args_length < 4) break;
+    //   wheels.setPID(args[1], args[2], args[3]);
+    //   break;
+    // }
     // TODO: enable this when we get encoders on the wheels
     // case SET_MOTOR_PID:{
     //   if(args_length < 5) break;
@@ -170,5 +174,5 @@ void loop() {
   }
 
   // update the wheels with the new pose
-  wheels.update(&imu);
+  wheels.update();
 }

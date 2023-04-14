@@ -1,28 +1,27 @@
 #pragma once
 
-#include "Motor.h"
+#include "Drive.h"
 #include "IMU.h"
 
-class SwerveDrive{
+class SwerveDrive : public Drive{
     public:
         SwerveDrive(Motor* steerMotor, Motor* driveMotor, float wheelBase);
-
-        /**
-         * @brief Initialize the swerve drive
-        */
-        void begin();
 
         /**
          * @brief Update the swerve drive
         */
         void update(IMU * imu);
 
+        void update() override{
+            this->update(nullptr);
+        };
+
         /**
          * @brief Set the velocity of the swerve drive
          * @param velocity
          * @param angle
         */
-        void setVelocity(float velocity, float angle);
+        void setDriveTarget(float velocity, float angle) override;
 
         /**
          * @brief Set the PID values for the swerve drive
@@ -32,16 +31,7 @@ class SwerveDrive{
         */
         void setPID(float kp, float ki, float kd);
 
-        /**
-         * @brief Get the velocity of the swerve drive
-         * @param None
-         * @return xyzData
-        */
-        xyzData getVelocity();
-
     private:
-        Motor* steerMotor;
-        Motor* driveMotor;
         float kp = 1;
         float ki = 0;
         float kd = 0;
